@@ -1,0 +1,6 @@
+{
+  "appId": "com.islamdweikat.laylatfifa",
+  "appName": "ليلة فيفا",
+  "webDir": "docs",
+  "android": { "backgroundColor": "#0b1122" }
+}
