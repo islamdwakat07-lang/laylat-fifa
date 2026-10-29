@@ -3,15 +3,17 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
-      - uses: actions/setup-java@v4
+          node-version: 22
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -24,7 +26,15 @@ jobs:
       - name: Build APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - run: mv android/app/build/outputs/apk/debug/app-debug.apk laylat-fifa.apk
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: laylat-fifa-apk
           path: laylat-fifa.apk
+      - name: Publish download link
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.${{ github.run_number }}
+          name: ليلة فيفا ${{ github.run_number }}
+          body: "نزّل ملف laylat-fifa.apk من الأسفل وثبّته على هاتف الأندرويد."
+          make_latest: true
+          files: laylat-fifa.apk
