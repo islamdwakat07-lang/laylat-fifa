@@ -276,6 +276,15 @@ tr.q td:first-child{box-shadow:inset -3px 0 0 var(--turf)}
 .sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:5px;vertical-align:middle;background:transparent}
 .sdot.on{background:var(--turf)}.sdot.off{background:var(--red)}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:60;max-width:min(92vw,520px);background:var(--deck2);border:1px solid var(--flood);color:var(--chalk);border-radius:14px;padding:11px 16px;font-family:var(--f-body);font-size:14px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.mem{display:grid;gap:8px}
+.mrow2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--deck2);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.mrow2 b{font-weight:600}
+.mrow2>.btn,.mrow2>.kq2{margin-inline-start:auto}
+.kq2{display:flex;gap:6px}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.tagh,.tagm{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px}
+.tagh{background:var(--flood);color:#1b1300}.tagm{background:rgba(99,169,255,.18);color:var(--sky)}
+.cta:disabled{opacity:.4}
 #confetti{position:fixed;inset:0;z-index:51;pointer-events:none;width:100%;height:100%}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -434,10 +443,11 @@ function cqTrack(T){return `<div class="track">`+MAP.map((c,i)=>{const cr=T.cq.c
 function cqBar(T){const s=T.cq.st,n=MAP[s].c.length;return `<div class="prog2"><span>دول ${MAP[s].n} المحتلة</span><span>${n-cqFree(T).length} / ${n}</span></div><div class="bar">`+allIds(T).map(p=>`<i style="width:${cqCount(T,p,s)/n*100}%;background:${pcol(T,p)}"></i>`).join('')+`</div>`}
 function cqPanel(T){const s=T.cq.st,M=MAP[s],P=T.cq.picks,o=T.cq.own[s];
  if(P){const w=esc(T.players[P.w].name),l=esc(T.players[P.l].name),free=cqFree(T),steal=cqCanSteal(T);
+  if(!canAct(T,P.w))return `<section class="match"><div class="stage"><span class="live">غنيمة المعركة</span></div><div class="pname" style="text-align:center;margin:8px 0 2px">${w} يختار ${P.left===2?'دولتين':'دولة'}</div><p class="note" style="margin-top:0">بانتظار ${w} ليختار غنيمته من هاتفه…</p></section>`;
   let h=`<section class="match"><div class="stage"><span class="live">غنيمة المعركة</span></div><div class="pname" style="text-align:center;margin:8px 0 2px">${w} يختار ${P.left===2?'دولتين':'دولة'}</div><p class="note" style="margin-top:0">اضغط على دولة في الخريطة أو من القوائم: دولة حرة${steal?` أو انتزع دولة من ${l}`:''}.</p>`;
   if(steal)h+=`<div class="sub">انتزع من ${l}</div><div class="chips">`+M.c.map((c,i)=>o[i]===P.l?`<button class="chip pick stl" data-act="cty" data-i="${i}">${esc(c[0])}</button>`:'').join('')+`</div>`;
   h+=`<div class="sub">دول حرة (${free.length})</div><div class="chips">`+free.map(i=>`<button class="chip pick" data-act="cty" data-i="${i}">${esc(M.c[i][0])}</button>`).join('')+`</div></section>`;return h}
- if(T.cq.chooser!=null){const c=T.cq.chooser;return `<section class="match"><div class="stage"><span class="live">المعركة القادمة</span><span>${M.n}</span></div><div class="pname" style="text-align:center;margin:8px 0 2px">${esc(T.players[c].name)} يختار خصمه</div><p class="note" style="margin-top:0">صاحب أقل عدد من الدول يختار من يهاجم.</p><div class="opp">`+allIds(T).filter(p=>p!==c).sort((a,b)=>cqCount(T,b,s)-cqCount(T,a,s)).map(p=>`<button class="btn" data-act="cqvs" data-p="${p}"><i style="background:${pcol(T,p)}"></i>${esc(T.players[p].name)}<small>${cqCount(T,p,s)} دولة</small></button>`).join('')+`</div></section>`}
+ if(T.cq.chooser!=null){const c=T.cq.chooser;return `<section class="match"><div class="stage"><span class="live">المعركة القادمة</span><span>${M.n}</span></div><div class="pname" style="text-align:center;margin:8px 0 2px">${esc(T.players[c].name)} يختار خصمه</div><p class="note" style="margin-top:0">صاحب أقل عدد من الدول يختار من يهاجم.${canAct(T,c)?'':' بانتظار اختياره من هاتفه…'}</p><div class="opp" ${canAct(T,c)?'':'hidden'}>`+allIds(T).filter(p=>p!==c).sort((a,b)=>cqCount(T,b,s)-cqCount(T,a,s)).map(p=>`<button class="btn" data-act="cqvs" data-p="${p}"><i style="background:${pcol(T,p)}"></i>${esc(T.players[p].name)}<small>${cqCount(T,p,s)} دولة</small></button>`).join('')+`</div></section>`}
  return ''}
 function cqTable(T){const s=T.cq.st;return `<div class="tblwrap"><table><thead><tr><th>#</th><th class="nm">اللاعب</th><th>${MAP[s].n}</th><th>العالم</th><th>تيجان</th></tr></thead><tbody>`+allIds(T).sort((a,b)=>cqTotal(T,b)-cqTotal(T,a)||cqCount(T,b,s)-cqCount(T,a,s)).map((p,i)=>`<tr><td>${i+1}</td><td class="nm"><button class="sw2" data-act="tcolf" data-p="${p}" style="background:${pcol(T,p)}" aria-label="تغيير اللون"></button>${esc(T.players[p].name)}</td><td>${cqCount(T,p,s)}</td><td class="pts">${cqTotal(T,p)}</td><td>${cqCrowns(T,p)}</td></tr>`).join('')+`</tbody></table></div>`+(ui.tcol!=null&&T.players[ui.tcol]?`<div class="sub">لون ${esc(T.players[ui.tcol].name)} على الخريطة</div>`+palette('tcol',pcol(T,ui.tcol),allIds(T).map(p=>pcol(T,p)),` data-p="${ui.tcol}"`):`<p class="hint">اضغط على مربع اللون بجانب أي لاعب لتغيير لونه.</p>`)}
 function newT(fmt,names,opts,chaos,prize,punish){const T={fmt,opts,chaos,prize:prize||'',punish:!!punish,players:names.map(n=>({name:n})),matches:[],done:false,champ:null,runner:null,seq:0,created:Date.now()};ENG[fmt].init(T);return T}
@@ -559,6 +569,8 @@ function matchCard(T,m){if(ui.mid!==m.id)ui={mid:m.id,sa:0,sb:0,pen:null,ca:[],c
  let extra='';if(T.fmt==='conquest'&&T.cq.queue){const k=T.cq.kingId;extra=(k!=null&&(m.a===k||m.b===k)?` · <span>${esc(T.players[k].name)} صامد ${T.cq.streak} ${T.cq.streak>1?'معارك':'معركة'}</span>`:'')+(T.cq.queue.length?` · <span>المنتظر: ${esc(T.players[T.cq.queue[0]].name)}</span>`:'')}
  if(T.fmt==='koth'&&T.king!=null)extra=` · <span>صاحب العرش: ${esc(T.players[T.king].name)}</span>`;
  const side=(n,k)=>`<div class="side"><div class="pname">${esc(n)}</div>${tierChip(n)}<div class="step"><button data-act="sc" data-s="${k}" data-d="1" aria-label="هدف لـ ${esc(n)}">+</button><span class="score">${ui[k]}</span><button data-act="sc" data-s="${k}" data-d="-1" aria-label="إلغاء هدف">−</button></div></div>`;
+ const mi=myIdx(T),player=!inRoom()||mi===m.a||mi===m.b;
+ if(!player){return `<section class="match"><div class="stage"><span class="live">المباراة القادمة</span><span>${esc(m.label)}</span>${extra}</div><div class="vs"><div class="side"><div class="pname">${esc(na)}</div>${tierChip(na)}</div><div class="mid" style="padding-top:8px">ضد</div><div class="side"><div class="pname">${esc(nb)}</div>${tierChip(nb)}</div></div>${m.rule?`<div class="rule">تحدي المباراة: ${esc(m.rule)}</div>`:''}<div class="h2h">${h2hLine(na,nb)}</div><p class="note">${D.me?'بانتظار الفائز ليُدخل النتيجة من هاتفه…':'اختر اسمك من تبويب «الغرفة» لتتمكن من إدخال نتائجك.'}</p></section>`}
  let h=`<section class="match"><div class="stage"><span class="live">المباراة القادمة</span><span>${esc(m.label)}</span>${extra}</div>
  <div class="vs">${side(na,'sa')}<div class="mid">ضد</div>${side(nb,'sb')}</div>`;
  const vetoed=ui.ca.includes('veto')||ui.cb.includes('veto');
@@ -570,7 +582,10 @@ function matchCard(T,m){if(ui.mid!==m.id)ui={mid:m.id,sa:0,sb:0,pen:null,ca:[],c
  if(ko&&draw)h+=`<div class="pens"><div class="optl">تعادل! من فاز ${m.stage==='cq'?'بالأشواط الإضافية أو ركلات الترجيح':'بركلات الترجيح'}؟</div><div class="seg"><button data-act="pen" data-p="${m.a}" aria-pressed="${ui.pen===m.a}">${esc(na)}</button><button data-act="pen" data-p="${m.b}" aria-pressed="${ui.pen===m.b}">${esc(nb)}</button></div></div>`;
  else if(draw&&T.fmt==='series')h+=`<div class="note">التعادل لا يُحسب في السلسلة، وتُلعب مباراة جديدة.</div>`;
  else if(draw&&T.fmt==='koth')h+=`<div class="note">التعادل يُسقط الملك ويصعد المتحدي مكانه.</div>`;
- h+=`<button class="cta" data-act="confirm" ${ko&&draw&&ui.pen==null?'disabled':''}>اعتمد النتيجة</button></section>`;return h}
+ const wIdx=draw?(ko?ui.pen:null):(fa>fb?m.a:m.b),notMine=inRoom()&&wIdx!=null&&wIdx!==mi;
+ if(notMine)h+=`<p class="note" style="color:#ffb3bd">هذه النتيجة تجعل ${esc(T.players[wIdx].name)} فائزاً، والفائز وحده يعتمد نتيجته من هاتفه.</p>`;
+ else if(inRoom())h+=`<p class="note">الفائز يعتمد النتيجة${ko?'':'، وفي التعادل يعتمدها أي من اللاعبَين'}.</p>`;
+ h+=`<button class="cta" data-act="confirm" ${(ko&&draw&&ui.pen==null)||notMine?'disabled':''}>اعتمد النتيجة</button></section>`;return h}
 function tbl(T,rows,qual){return `<div class="tblwrap"><table><thead><tr><th>#</th><th class="nm">اللاعب</th><th>لعب</th><th>ف</th><th>ت</th><th>خ</th><th>الأهداف</th><th>±</th><th>نقاط</th><th>آخر 5</th></tr></thead><tbody>`+
  rows.map((r,i)=>`<tr class="${i<qual?'q':''}"><td>${i+1}</td><td class="nm">${esc(T.players[r.id].name)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf}:${r.ga}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td class="pts">${r.pts}</td><td><span class="form">${r.form.slice(-5).map(f=>`<i class="${f}"></i>`).join('')}</span></td></tr>`).join('')+`</tbody></table></div>`}
 function standings(T){let h='';
@@ -659,17 +674,26 @@ let cfRun=0;function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)'
 
 
 /* ---------- linking phones (rooms) ---------- */
-const SYNC={ok:false,code:null,rev:-1,ref:null,online:false,last:null,pending:null};
+const SYNC={ok:false,code:null,rev:-1,ref:null,online:false,last:null,pending:null,members:{},host:null,joined:false};
+const DEV=(()=>{let d=store.get('fn_dev',null);if(!d){d='d'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);store.set('fn_dev',d)}return d})();
+const inRoom=()=>!!(SYNC.ok&&SYNC.code);
+const isHost=()=>!inRoom()||SYNC.host===DEV||!SYNC.host;
+const myIdx=T=>T?T.players.findIndex(p=>p.name===D.me):-1;
+const canAct=(T,i)=>!inRoom()||(i!=null&&myIdx(T)===i);
+function registerMe(){if(!SYNC.ref)return;const r=SYNC.ref.child('members/'+DEV);r.set({n:D.me||'',on:true,t:Date.now()}).catch(()=>{});try{r.onDisconnect().update({on:false})}catch(e){}SYNC.joined=true}
 function fbReady(){return typeof firebase!=='undefined'&&window.FIREBASE_CONFIG&&FIREBASE_CONFIG.databaseURL&&!/ضع/.test(FIREBASE_CONFIG.apiKey||'ضع')}
 function syncInit(){if(!fbReady())return;try{if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);SYNC.db=firebase.database();SYNC.ok=true;
- SYNC.db.ref('.info/connected').on('value',x=>{SYNC.online=!!x.val();render()});const c=store.get('fn_room',null);if(c)joinRoom(c)}catch(e){SYNC.ok=false}}
+ SYNC.db.ref('.info/connected').on('value',x=>{SYNC.online=!!x.val();if(SYNC.online&&SYNC.joined)registerMe();render()});const c=store.get('fn_room',null);if(c)joinRoom(c)}catch(e){SYNC.ok=false}}
 function payload(){return JSON.stringify({S,H,U:U.slice(-8)})}
-function joinRoom(code){if(SYNC.ref)SYNC.ref.off();SYNC.code=code;store.set('fn_room',code);SYNC.rev=-1;SYNC.last=null;SYNC.ref=SYNC.db.ref('rooms/'+code);
- SYNC.ref.on('value',snap=>{const v=snap.val();if(!v){if(SYNC.rev<0){SYNC.rev=0;syncPush(true)}return}
-  if(v.rev===SYNC.rev)return;if(SYNC.pending&&v.data===SYNC.pending){SYNC.rev=v.rev;SYNC.last=v.data;return}applyRemote(v)},()=>toast('تعذّر الاتصال بالغرفة. تأكد من الإنترنت.'))}
-function leaveRoom(){if(SYNC.ref)SYNC.ref.off();SYNC.ref=null;SYNC.code=null;SYNC.rev=-1;store.set('fn_room',null)}
+function joinRoom(code,fresh){if(SYNC.ref)SYNC.ref.off();SYNC.code=code;store.set('fn_room',code);SYNC.rev=-1;SYNC.last=null;SYNC.joined=false;SYNC.members={};SYNC.host=fresh?DEV:null;SYNC.ref=SYNC.db.ref('rooms/'+code);
+ SYNC.ref.on('value',snap=>{const v=snap.val();if(!v){if(SYNC.rev<0){if(!fresh){leaveRoom();toast('لا توجد غرفة بهذا الرمز. تأكد من الرقم.');render();return}SYNC.rev=0;syncPush(true)}return}
+  if(v.kicked&&v.kicked[DEV]){leaveRoom();view='room';sound('alert');toast('أخرجك صاحب الغرفة منها. بياناتك بقيت على هاتفك.');render();return}
+  const mOld=JSON.stringify(SYNC.members)+SYNC.host;SYNC.members=v.members||{};SYNC.host=v.host||null;
+  if(!SYNC.joined&&v.rev!=null)registerMe();
+  if(v.rev===SYNC.rev){if(view==='room'&&mOld!==JSON.stringify(SYNC.members)+SYNC.host)render();return}if(SYNC.pending&&v.data===SYNC.pending){SYNC.rev=v.rev;SYNC.last=v.data;return}applyRemote(v)},()=>toast('تعذّر الاتصال بالغرفة. تأكد من الإنترنت.'))}
+function leaveRoom(self){if(SYNC.ref){if(self&&SYNC.joined)SYNC.ref.child('members/'+DEV).remove().catch(()=>{});SYNC.ref.off()}SYNC.ref=null;SYNC.code=null;SYNC.rev=-1;SYNC.joined=false;SYNC.members={};SYNC.host=null;store.set('fn_room',null)}
 function syncPush(force){if(!SYNC.ok||!SYNC.ref||SYNC.rev<0)return;const p=payload();if(!force&&p===SYNC.last)return;const base=SYNC.rev;SYNC.pending=p;
- SYNC.ref.transaction(cur=>{if(cur&&cur.rev!==base)return;return{rev:base+1,data:p,by:D.me||'',t:Date.now()}},(err,ok,snap)=>{SYNC.pending=null;
+ SYNC.ref.transaction(cur=>{if(cur&&cur.rev!==base)return;return Object.assign({},cur||{},{rev:base+1,data:p,by:D.me||'',t:Date.now(),host:(cur&&cur.host)||DEV})},(err,ok,snap)=>{SYNC.pending=null;
   if(err){toast('لم يُحفظ التعديل في الغرفة. حاول مرة أخرى.');return}const v=snap&&snap.val();
   if(ok&&v){SYNC.rev=v.rev;SYNC.last=v.data}else if(v){applyRemote(v);toast('سبقك هاتف آخر بتعديل، فتحدّثت الشاشة. أعد خطوتك إن لزم.')}},false)}
 function applyRemote(v){let o;try{o=JSON.parse(v.data)}catch(e){return}const old=S;SYNC.rev=v.rev;SYNC.last=v.data;
@@ -692,11 +716,17 @@ function notify(old,n,by){if(!n)return;const same=old&&old.created===n.created;
  if(n.fmt==='conquest'&&n.cq&&me>=0&&n.cq.chooser===me&&old.cq&&old.cq.chooser!==me){sound('alert');toast('دورك! اختر خصمك في المعركة القادمة')}}
 let toastT=null;function toast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.setAttribute('role','status');document.body.appendChild(t)}
  t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},4200)}
+function membersPanel(){const ids=Object.keys(SYNC.members).sort((a,b)=>(b===SYNC.host)-(a===SYNC.host)||(SYNC.members[a].t||0)-(SYNC.members[b].t||0));
+ return `<section class="panel"><h2>في الغرفة <span class="count">${ids.length}</span></h2>`+(ids.length?`<div class="mem">`+ids.map(id=>{const m=SYNC.members[id];
+  return `<div class="mrow2"><span class="sdot ${m.on?'on':'off'}"></span><b>${esc(m.n||'بدون اسم')}</b>${id===SYNC.host?'<span class="tagh">صاحب الغرفة</span>':''}${id===DEV?'<span class="tagm">أنت</span>':''}
+  ${SYNC.host===DEV&&id!==DEV?(ui.kick===id?`<span class="kq2"><button class="btn danger" data-act="kick" data-id="${id}">تأكيد الإخراج</button><button class="btn" data-act="kickask" data-id="">رجوع</button></span>`:`<button class="btn danger sm" data-act="kickask" data-id="${id}">إخراج</button>`):''}</div>`}).join('')+`</div>`:'<p class="hint" style="margin:0">لا أحد بعد.</p>')
+  +(SYNC.host===DEV?'<p class="hint">أنت صاحب الغرفة: تبدأ البطولات وتلغيها وتتراجع عن الأخطاء، وتستطيع إخراج أي هاتف. من تُخرجه لا يستطيع الدخول بنفس الرمز مرة أخرى.</p>':'<p class="hint">صاحب الغرفة هو من يبدأ البطولات ويلغيها. والفائز يُدخل نتيجته ويختار دولته من هاتفه.</p>')+`</section>`}
 function room(){
  if(!SYNC.ok)return `<section class="panel"><h2>ربط الهواتف</h2><p class="hint" style="margin:0">${typeof firebase==='undefined'?'الربط يعمل في نسخة التطبيق المثبّتة على الهاتف (APK أو الآيفون) وعند وجود إنترنت.':'لم يُضبط الربط بعد. ضع إعدادات Firebase في ملف firebase-config.js ثم أعد بناء التطبيق.'}</p></section>`;
  const names=(S?S.players.map(p=>p.name):D.names);
  if(SYNC.code)return `<section class="lead"><div class="k">رمز الغرفة</div><div class="n" style="font-family:var(--f-num);letter-spacing:6px;font-size:52px">${esc(SYNC.code)}</div><p><span class="sdot ${SYNC.online?'on':'off'}"></span>${SYNC.online?'متصل: كل تعديل يظهر عند الجميع فوراً':'غير متصل الآن. التعديلات تُرسل عند عودة الإنترنت.'}</p></section>
- <section class="panel"><h2>من أنت؟</h2><p class="hint" style="margin:0 0 10px">اختر اسمك ليصلك تنبيه عندما ينتزع أحد دولة منك أو يحين دورك.</p><div class="chips">${names.map(n=>`<button class="chip ${D.me===n?'sel':'add'}" data-act="me" data-n="${esc(n)}">${esc(n)}</button>`).join('')||'<span class="hint">أضف اللاعبين أولاً.</span>'}</div></section>
+ <section class="panel"><h2>من أنت؟</h2><p class="hint" style="margin:0 0 10px">${D.me?'':'<b style="color:var(--red)">اختر اسمك أولاً:</b> '}بدون اسمك لا تستطيع إدخال نتيجتك ولا اختيار دولتك، ولن تصلك التنبيهات.</p><div class="chips">${names.map(n=>`<button class="chip ${D.me===n?'sel':'add'}" data-act="me" data-n="${esc(n)}">${esc(n)}</button>`).join('')||'<span class="hint">أضف اللاعبين أولاً.</span>'}</div></section>
+ ${membersPanel()}
  <section class="panel"><h2>دعوة الأصدقاء</h2><p class="hint" style="margin:0">أرسل لهم الرمز <b style="color:var(--chalk)">${esc(SYNC.code)}</b>. كل واحد يفتح التطبيق على هاتفه، يذهب إلى «الغرفة»، يكتب الرمز ويضغط «ادخل».</p></section>
  <button class="btn danger" data-act="ask" data-q="leave">مغادرة الغرفة</button>${ui.ask==='leave'?`<div class="confirm"><span>مغادرة الغرفة؟ تبقى نسخة من البطولة على هاتفك فقط.</span><span style="display:flex;gap:8px"><button class="btn" data-act="ask" data-q="">رجوع</button><button class="btn danger" data-act="leaveroom">غادر</button></span></div>`:''}`;
  return `<section class="panel"><h2>أنشئ غرفة</h2><p class="hint" style="margin:0 0 10px">تُنقل بطولتك الحالية ولوحة الشرف إلى الغرفة، ويحصل كل من يدخلها على نفس البيانات مباشرة.</p><button class="cta" data-act="mkroom">أنشئ غرفة جديدة</button></section>
@@ -719,21 +749,24 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
  else if(a==='fmt')D.fmt=b.dataset.f;
  else if(a==='opt'){D.opts[b.dataset.f]=Object.assign(optsFor(b.dataset.f,D.names.length),{[b.dataset.k]:JSON.parse(b.dataset.v)})}
  else if(a==='tg')D[b.dataset.k]=!D[b.dataset.k];
- else if(a==='start'){const n=D.names.length;if(n<2)return;const f=available(n).includes(D.fmt)?D.fmt:recommended(n);S=newT(f,D.names,optsFor(f,n),D.chaos,D.prize,D.punish);S.colors=D.names.map(colorOf);U=[];view='live';tab='table';ui={mid:null,sa:0,sb:0,pen:null,ask:null};scrollTo(0,0)}
- else if(a==='rematch'){const T=S;S=newT(T.fmt,T.players.map(p=>p.name),T.opts,T.chaos,T.prize,T.punish);S.colors=T.players.map((p,i)=>pcol(T,i));U=[];view='live';ov.innerHTML='';cfRun++;$('#confetti').hidden=true;ui={mid:null,sa:0,sb:0,pen:null,ask:null};scrollTo(0,0)}
+ else if(a==='start'){const n=D.names.length;if(n<2)return;if(!isHost()){toast('صاحب الغرفة وحده يبدأ البطولة.');return}const f=available(n).includes(D.fmt)?D.fmt:recommended(n);S=newT(f,D.names,optsFor(f,n),D.chaos,D.prize,D.punish);S.colors=D.names.map(colorOf);U=[];view='live';tab='table';ui={mid:null,sa:0,sb:0,pen:null,ask:null};scrollTo(0,0)}
+ else if(a==='rematch'){if(!isHost()){toast('صاحب الغرفة وحده يبدأ جولة جديدة.');return}const T=S;S=newT(T.fmt,T.players.map(p=>p.name),T.opts,T.chaos,T.prize,T.punish);S.colors=T.players.map((p,i)=>pcol(T,i));U=[];view='live';ov.innerHTML='';cfRun++;$('#confetti').hidden=true;ui={mid:null,sa:0,sb:0,pen:null,ask:null};scrollTo(0,0)}
  else if(a==='sc'){const k=b.dataset.s;ui[k]=Math.max(0,Math.min(30,ui[k]+ +b.dataset.d));if(ui.sa!==ui.sb)ui.pen=null;sound(+b.dataset.d>0?'goal':'minus')}
  else if(a==='pen')ui.pen=+b.dataset.p;
  else if(a==='reroll'){const m=nextMatch(S);if(m){let r;do r=pick(RULES);while(r===m.rule);m.rule=r}}
- else if(a==='mkroom'){if(SYNC.ok)joinRoom(String(10000+Math.floor(Math.random()*90000)))}
+ else if(a==='mkroom'){if(SYNC.ok)joinRoom(String(10000+Math.floor(Math.random()*90000)),true)}
  else if(a==='joinroom'){const c=(($('#rcode')||{}).value||'').trim();if(!/^\d{4,6}$/.test(c)){toast('اكتب رمز الغرفة: أرقام فقط.');return}if(SYNC.ok)joinRoom(c)}
- else if(a==='leaveroom'){leaveRoom();ui.ask=null}
- else if(a==='me'){D.me=b.dataset.n}
+ else if(a==='leaveroom'){leaveRoom(true);ui.ask=null}
+ else if(a==='kickask'){ui.kick=b.dataset.id||null}
+ else if(a==='kick'){const id=b.dataset.id;if(SYNC.host===DEV&&SYNC.ref&&id&&id!==DEV){SYNC.ref.child('kicked/'+id).set(true).then(()=>SYNC.ref.child('members/'+id).remove()).catch(()=>toast('تعذّر الإخراج. تأكد من الإنترنت.'));toast('تم إخراجه من الغرفة')}ui.kick=null}
+ else if(a==='me'){D.me=b.dataset.n;if(SYNC.ref&&SYNC.joined)SYNC.ref.child('members/'+DEV+'/n').set(D.me).catch(()=>{})}
  else if(a==='pcol'){const i=+b.dataset.i;ui.colorFor=ui.colorFor===i?null:i}
  else if(a==='setcol'){const nm=D.names[+b.dataset.i];D.colors=D.colors||{};if(nm)D.colors[nm]=b.dataset.c;ui.colorFor=null}
  else if(a==='tcolf'){const p=+b.dataset.p;ui.tcol=ui.tcol===p?null:p}
  else if(a==='tcol'){const T=S,p=+b.dataset.p;T.colors=allIds(T).map(i=>pcol(T,i));T.colors[p]=b.dataset.c;D.colors=D.colors||{};D.colors[T.players[p].name]=b.dataset.c;ui.tcol=null}
- else if(a==='cqvs'){const T=S;if(T.cq.chooser==null)return;const s=T.cq.st,k=T.matches.length+1;addMatch(T,T.cq.chooser,+b.dataset.p,{stage:'cq',label:MAP[s].n+' · المعركة '+k});T.cq.chooser=null;ui.info=null}
+ else if(a==='cqvs'){const T=S;if(T.cq.chooser==null)return;if(!canAct(T,T.cq.chooser)){toast('صاحب الدور يختار خصمه من هاتفه.');return}const s=T.cq.st,k=T.matches.length+1;addMatch(T,T.cq.chooser,+b.dataset.p,{stage:'cq',label:MAP[s].n+' · المعركة '+k});T.cq.chooser=null;ui.info=null}
  else if(a==='cty'){const T=S;if(!T||T.fmt!=='conquest')return;const P=T.cq.picks,i=+b.dataset.i,s=T.cq.st,o=T.cq.own[s];ui.info=i;
+  if(P&&!canAct(T,P.w)){toast(`${T.players[P.w].name} وحده يختار غنيمته.`);render();return}
   if(P&&(o[i]==null||(o[i]===P.l&&cqCanSteal(T)))){snap();const was=o[i];o[i]=P.w;P.left--;if(was!=null)P.stole=true;ui.info=null;const cr=cqCheck(T);save();render();
    if(T.done){sound('fanfare');celebrate();return}
    if(cr){sound('crown');FX=[`<div class="rwl bd">+100 عملة لصاحب التاج</div>`];flash('تاج '+MAP[cr.s].n+'!','',`${esc(T.players[cr.p].name)} صاحب أكثر دول ${MAP[cr.s].n}. تُفتح الآن ${MAP[T.cq.st].n}`,'');return}
@@ -746,16 +779,17 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(
  else if(a==='buy'){const P=hp(ui.shopP),c=CARDS[b.dataset.c];if(P.coins>=c.p){P.coins-=c.p;P.cards[b.dataset.c]=(P.cards[b.dataset.c]||0)+1;ui.bought=`تم شراء «${c.n}» لـ ${ui.shopP}. يظهر في بطاقات القوة قبل مباراته.`;sound('coin')}}
  else if(a==='confirm'){const T=S,m=nextMatch(T);if(!m)return;const ko=m.stage==='ko'||m.stage==='third'||m.stage==='cq';
   const fa=ui.sa+(ui.ca.includes('golden')?1:0),fb=ui.sb+(ui.cb.includes('golden')?1:0);if(ko&&fa===fb&&ui.pen==null)return;
+  if(inRoom()){const mi=myIdx(T),wI=fa===fb?(ko?ui.pen:null):(fa>fb?m.a:m.b);if(wI!=null?wI!==mi:(mi!==m.a&&mi!==m.b)){toast('الفائز وحده يعتمد النتيجة من هاتفه.');return}}
   snap();const na=T.players[m.a].name,nb=T.players[m.b].name;
   m.cards={a:ui.ca.filter(c=>hp(na).cards[c]>0),b:ui.cb.filter(c=>hp(nb).cards[c]>0)};m.cards.a.forEach(c=>hp(na).cards[c]--);m.cards.b.forEach(c=>hp(nb).cards[c]--);
   m.sa=ui.sa+(m.cards.a.includes('golden')?1:0);m.sb=ui.sb+(m.cards.b.includes('golden')?1:0);m.pen=ko&&m.sa===m.sb?ui.pen:null;m.done=true;const res=record(T,m);ENG[T.fmt].advance(T,m);
   const out=m.stage==='ko'&&m.ko>2?loserOf(m):null;ui.mid=null;save();render();
   if(T.done){sound('fanfare');celebrate()}else{sound('whistle');hype(T,m,res,out)}return}
- else if(a==='undo'){sound('undo');const u=U.pop();if(u){const o=JSON.parse(u);S=o.S;H=o.H;ui.mid=null;ov.innerHTML='';view='live'}}
+ else if(a==='undo'){if(!isHost()){toast('صاحب الغرفة وحده يتراجع عن النتائج.');return}sound('undo');const u=U.pop();if(u){const o=JSON.parse(u);S=o.S;H=o.H;ui.mid=null;ov.innerHTML='';view='live'}}
  else if(a==='tab')tab=b.dataset.t;
  else if(a==='ask')ui.ask=b.dataset.q||null;
- else if(a==='end'){S=null;U=[];view='setup';ui.ask=null}
- else if(a==='reset'){H={p:{},h2h:{},hist:[]};ui.ask=null}
+ else if(a==='end'){if(!isHost()){toast('صاحب الغرفة وحده يلغي البطولة.');ui.ask=null;render();return}S=null;U=[];view='setup';ui.ask=null}
+ else if(a==='reset'){if(!isHost()){toast('صاحب الغرفة وحده يمسح السجل.');ui.ask=null;render();return}H={p:{},h2h:{},hist:[]};ui.ask=null}
  else if(a==='celeb'){celebrate();return}
  save();render()});
 syncInit();render();
